@@ -1,8 +1,8 @@
+import 'package:crud_movil/presentation/pages/connectiviti.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:crud_movil/presentation/pages/connectiviti.dart';
 
 class ItemsController extends GetxController {
   var ingredients = <Map<String, dynamic>>[].obs;
@@ -50,8 +50,7 @@ class ItemsController extends GetxController {
     final prefs = await SharedPreferences.getInstance();
     final data = prefs.getString('offlineData');
     if (data != null) {
-      ingredients.value = List<Map<String, dynamic>>.from(
-          jsonDecode(data).map((item) => Map<String, dynamic>.from(item)));
+      ingredients.value = List<Map<String, dynamic>>.from(jsonDecode(data));
     }
 
     if (Get.find<ConnectivityController>().isOnline.value) {

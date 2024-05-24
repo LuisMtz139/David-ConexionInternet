@@ -31,33 +31,41 @@ class ConnectivityController extends GetxController {
     }
   }
 
-  Future<void> _syncPendingOperations() async {
-    final prefs = await SharedPreferences.getInstance();
-    final operations = prefs.getString('offlineOperations');
-    if (operations != null) {
-      final List<dynamic> ops = jsonDecode(operations);
-      for (var op in ops) {
-        switch (op['type']) {
-          case 'add':
-            await itemsController.sendAddRequest(op['data']);
-            break;
-          case 'edit':
-            await itemsController.sendEditRequest(op['data']['id'], op['data']);
-            break;
-          case 'delete':
-            await itemsController.sendDeleteRequest(op['data']['id']);
-            break;
-        }
+Future<void> _syncPendingOperations() async {
+  final prefs = await SharedPreferences.getInstance();
+  final operations = prefs.getString('offlineOperations');
+  if (operations != null) {
+    final List<dynamic> ops = jsonDecode(operations);
+    for (var op in ops) {
+      switch (op['type']) {
+        case 'add':
+          await itemsController.sendAddRequest(Map<String, dynamic>.from(op['data']));
+          break;
+        case 'edit':
+          // Convert the data to Map<String, String>
+          Map<String, String> data = op['data'].map<String, String>((key, value) {
+            return MapEntry(key.toString(), value.toString());
+          }).cast<String, String>();
+          await itemsController.sendEditRequest(op['data']['id'], data);
+          break;
+        case 'delete':
+          await itemsController.sendDeleteRequest(op['data']['id']);
+          break;
       }
-      prefs.remove('offlineOperations');
     }
+    prefs.remove('offlineOperations');
   }
+}
+
+
+
 
   Future<void> _loadPendingOperations() async {
     final prefs = await SharedPreferences.getInstance();
     final operations = prefs.getString('offlineOperations');
     if (operations != null) {
-      pendingOperations.value = List<Map<String, dynamic>>.from(jsonDecode(operations));
+      pendingOperations.value =
+          List<Map<String, dynamic>>.from(jsonDecode(operations));
     }
   }
 }
